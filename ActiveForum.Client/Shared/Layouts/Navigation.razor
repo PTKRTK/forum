@@ -1,0 +1,84 @@
+﻿
+<nav class="navbar is-black"  style="background-color:#275169;">
+    <div class="navbar-brand">
+        <a class="navbar-item has-text-weight-bold" href="@(LandingpageUrl)" style="color: #FFF;">Active Forum</a>
+    </div>
+
+    <div class="navbar-menu" id="navMenu">
+        <AuthorizeView>
+         <Authorized>
+        <div class="navbar-start"> 
+            @foreach (var item in this.navigationMenuItems) 
+            {
+                <a href="@(item.Url)" class="navbar-item" style="color: #FFF;">@(item.Name)</a>
+            }
+        </div>
+        <div class="navbar-end" style="color: #FFF;">
+            <span>Jesteś zalogowany jako, @context.User.Identity.Name</span>
+            <a href="logout" class="navbar-item" style="color: #FFF;">Wyloguj się</a>
+        </div>
+        </Authorized>
+        <NotAuthorized> 
+        <div class="navbar-end">
+            @foreach (var item in this.userMenuItems)
+            {
+                <a href="@(item.Url)" class="navbar-item">@(item.Name)</a>
+            }
+          
+            <a href="register" class="navbar-item" style="color: #FFF;">Zarejestruj się</a>
+            <a href="login" class="navbar-item" style="color: #FFF;">Zaloguj  się</a>
+        </div>
+        </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</nav>
+
+
+@code
+{   
+    private const string LandingpageUrl = "/";
+    private List<NavigationItem> navigationMenuItems = new List<NavigationItem>
+    {
+        new NavigationItem
+        {
+            Name = "Start",
+            Url = LandingpageUrl,
+        },
+        new NavigationItem
+        {
+            Name = "Forum",
+            Url = "/forum",
+        },
+        new NavigationItem
+        {
+            Name = "Komunikator",
+            Url = "/communicator",
+        },
+         new NavigationItem
+        {
+            Name = "Znajomi",
+            Url = "/friends",
+        }
+    };
+
+    private List<NavigationItem> userMenuItems = new List<NavigationItem>
+    {
+        new NavigationItem
+        {
+            Name = "Kontakt",
+            Url = "/contact",
+        },
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.CompletedTask;
+    }
+
+    private class NavigationItem
+    {
+        public string Name { get; set; }
+        
+        public string Url { get; set; }     
+    }
+}

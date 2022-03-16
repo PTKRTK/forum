@@ -1,0 +1,44 @@
+﻿<form class="box">
+<EditForm Model="PrivateGroup" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="field">
+        <label class="label" for="name">Nazwa grupy</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@PrivateGroup.GroupName" />
+            <ValidationMessage For="@(() => PrivateGroup.GroupName)" />
+        </div>
+    </div>
+
+     <div class="field">
+        <label class="label" for="name">Opis</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@PrivateGroup.Description" />
+            <ValidationMessage For="@(() => PrivateGroup.Description)" />
+        </div>
+    </div>
+    
+    <div class="field">
+        <label class="label" for="name">Zaznacz jeśli grupa ma być widoczna na stronie wyszukiwania grup.</label>
+        <div class="control">
+            <InputCheckbox  @bind-Value="@PrivateGroup.GroupVisible" />
+            <ValidationMessage For="@(() => PrivateGroup.GroupVisible)" />
+        </div>
+    </div>
+
+      <div class="field">
+        <label class="label" for="name">Zaznacz jeśli w celu dołączenia do grupy potrzebna jest akceptacja.</label>
+        <div class="control">
+            <InputCheckbox  @bind-Value="@PrivateGroup.IsPrivate" />
+            <ValidationMessage For="@(() => PrivateGroup.IsPrivate)" />
+        </div>
+    </div>
+    <button type="submit" class="button is-primary">Dodaj</button>
+</EditForm>
+</form>
+
+@code {
+    [Parameter] public PrivateGroup PrivateGroup { get; set; }
+ 
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+}

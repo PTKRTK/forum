@@ -1,0 +1,23 @@
+﻿@page "/category/create"
+@inject ICategoriesRepository categoriesRepository
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "Owner, Admin")]
+
+<CategoryForm CategoryOfTopic="categoryOfTopic" OnValidSubmit="Create" />
+
+@code {
+    CategoryOfTopic categoryOfTopic = new ();
+
+    private async Task Create()
+    {
+        try
+        {
+            await categoriesRepository.CreateCategory(categoryOfTopic);
+            navigationManager.NavigateTo("/forum");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

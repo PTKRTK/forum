@@ -1,0 +1,91 @@
+﻿@page "/forum"
+@inject ISportsBoardRepository sportsRepository
+@attribute [Authorize]
+
+<Heading Title="Sporty"
+         Subtitle="Wybierz interesujący Cię sport." />
+
+<MenagmentPanel Items="items" />
+
+<TextSearchEngine FindByName="Search" />
+
+<UniversalList List="Sports">
+    <ItemFragment Context="sport">
+        <SportDetails Sport="sport" DeleteSport="DeleteSport" @key="sport.Id" />
+    </ItemFragment>
+</UniversalList>
+
+<Pagination CurrentPage="paginationDTO.CurrentPage" PagesAmount="pagesAmount"
+            SelectedPage="SelectedPage" />
+
+@code
+{
+    private int pagesAmount;
+    private string name = "";
+    public List<MenagmentPanelItem> items = new();
+    private List<Sport> Sports;
+    private PaginationDTO paginationDTO = new PaginationDTO() { PageObjectsNumber = 5 };
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetPaginatedSports();
+            var authState = await AuthenticationState;
+            var user = authState.User;
+            if (user.IsInRole("Owner") || (user.IsInRole("Admin")))
+            {
+                items.Add(new MenagmentPanelItem()
+                    { PageName = "Utwórz sport", PageUlr = "sport/create" });
+
+                items.Add(new MenagmentPanelItem()
+                    { PageName = "Dodaj nowe kategorie", PageUlr = "category/create" });
+
+                items.Add(new MenagmentPanelItem()
+                    { PageName = "Usuń kategorie", PageUlr = "categories/manage" });
+
+                items.Add(new MenagmentPanelItem()
+                    { PageName = "Zarządzanie użytkownikami", PageUlr = "users" });
+            }
+        }
+        catch
+        {
+
+        }
+    }
+
+    private async Task GetPaginatedSports()
+    {
+        PaginatedResponse<List<Sport>> paginatedSports;
+        if (name.Length > 2 && !string.IsNullOrWhiteSpace(name))
+        {
+            paginatedSports = await sportsRepository.GetSports(paginationDTO, name);
+        }
+        else
+        {
+            paginatedSports = await sportsRepository.GetSports(paginationDTO);
+        }
+
+        Sports = paginatedSports.Response;
+        pagesAmount = paginatedSports.PagesAmount;
+    }
+
+    private async Task SelectedPage(int currentPage)
+    {
+        paginationDTO.CurrentPage = currentPage;
+        await GetPaginatedSports();
+    }
+
+    private async Task Search(string name)
+    {
+        this.name = name;
+        paginationDTO.CurrentPage = 1;
+        await GetPaginatedSports();
+    }
+
+    private void DeleteSport(Sport sport)
+    {
+        Sports.Remove(sport);
+    }
+}

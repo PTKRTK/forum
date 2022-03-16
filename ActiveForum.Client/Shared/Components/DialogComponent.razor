@@ -1,0 +1,50 @@
+﻿@if (display)
+{
+    <div class="modal is-active">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">@Communicate</p>
+                <button class="delete" aria-label="close" @onclick="(() => {
+                    Close();
+
+                })"></button>
+            </header>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @onclick="(() =>  DoChange())">Tak</button>
+                <button class="button is-danger" @onclick="(() => { Close();})">
+                    Nie 
+                </button>
+            </footer>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string Communicate { get; set; }
+    [Parameter]
+    public EventCallback<string> MakeChange { get; set; }
+
+    private bool display = false;
+
+    public void Show()
+    {
+        this.display = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        this.display = false;
+        StateHasChanged();
+    }
+
+    public async Task DoChange()
+    {
+        this.display = false;
+        StateHasChanged();
+        await MakeChange.InvokeAsync();
+    }
+}

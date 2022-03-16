@@ -1,0 +1,41 @@
+﻿@page "/login"
+
+@inject IAccountsRepository accountsRepository
+@inject NavigationManager navigationManager
+@inject ILoginService loginService
+
+<form class="box">
+<EditForm Model="userInfo" OnValidSubmit="LoginUser">
+    <DataAnnotationsValidator />
+  
+    <div class="field">
+        <label class="label">Wprowadź mail:</label>
+        <div class="control has-icons-left">
+            <InputText class="input" @bind-Value="@userInfo.Email" />
+            <ValidationMessage For="@(() => userInfo.Email)" />
+                <span class="icon is-small is-left">
+                    <i class="fas fa-envelope"></i>
+                </span>
+        </div>
+    </div>
+
+    <div class="field">
+        <label class="label">Wprowadź hasło:</label>
+            <PasswordInput @bind-Value="@userInfo.Password" />
+            <ValidationMessage For="@(() => userInfo.Password)" />
+    </div>
+    <button type="submit" class="button is-primary">Zaloguj</button>
+   
+</EditForm>
+ </form>
+
+@code {
+    private UserInfo userInfo = new UserInfo();
+
+    private async Task LoginUser()
+    {
+        var userToken = await accountsRepository.Login(userInfo);
+        await loginService.Login(userToken);
+        navigationManager.NavigateTo("");
+    }
+}

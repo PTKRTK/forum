@@ -1,0 +1,40 @@
+﻿@inject IPostsRepository postRepository
+
+<article class="media p-5">
+    <div class="media-content">
+        <div class="field">
+            <p class="control">
+                <textarea class="textarea" @bind="createPost.PostContent" @bind:event="oninput" placeholder="Dodaj komentarz..."></textarea>
+            </p>
+        </div>
+        <nav class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <a class="button is-info" @onclick="@(() => AddPost())">Zatwierdź</a>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                </div>
+            </div>
+        </nav>
+    </div>
+</article>
+
+@code {
+    [Parameter] public int TopicId { get; set; }
+    [Parameter] public EventCallback<Post> ShowAddedPost { get; set; }
+
+    private Post createPost = new Post();
+
+    private async Task AddPost()
+    {
+        createPost.TopicId = TopicId;
+        
+        await postRepository.CreatePost(createPost);
+     
+        await ShowAddedPost.InvokeAsync(createPost);
+       
+        createPost = new Post();
+    }
+}

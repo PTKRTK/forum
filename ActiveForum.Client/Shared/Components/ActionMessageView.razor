@@ -1,0 +1,17 @@
+﻿@if(!string.IsNullOrEmpty(ActionMessage.CommunicateContent) && ActionMessage.Successful == true)
+{
+    <div class="notification has-has-background-grey-lighter">
+        <text>@ActionMessage.CommunicateContent</text>
+    </div>
+}
+else if(!string.IsNullOrEmpty(ActionMessage.CommunicateContent))
+{
+    <div class="notification has-background-danger-light">
+        <text>@ActionMessage.CommunicateContent</text>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public ActionMessage ActionMessage { get; set; }
+}

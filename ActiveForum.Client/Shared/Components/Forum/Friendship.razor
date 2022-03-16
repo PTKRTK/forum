@@ -1,0 +1,26 @@
+﻿@inject IFriendsRepository friendsRepository
+
+<span>
+    Mail: @Friend.Email
+</span>
+<button class="button is-danger is-outlined" @onclick="@(() => dialogFriend.Show())">
+    <span>Usuń</span>
+    <span class="icon is-small">
+        <i class="fas fa-times"></i>
+    </span>
+</button>
+
+<DialogComponent @ref = "dialogFriend" Communicate="Czy na pewno chcesz usunąć znajomego?" MakeChange = "Delete"> </DialogComponent>
+
+@code {
+    [Parameter] public FriendInfo Friend { get; set; }
+    [Parameter] public EventCallback<FriendInfo> DeleteFromList { get; set; }
+
+    private DialogComponent dialogFriend;
+
+    private async Task Delete()
+    {
+        await friendsRepository.DeleteFriend(Friend);
+        await DeleteFromList.InvokeAsync(Friend);
+    }
+}

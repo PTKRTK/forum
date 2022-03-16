@@ -1,0 +1,26 @@
+﻿<text class="label">Moja ocena: </text>
+<div class="select">
+    <select @bind="SelectedRating" @onclick="@(() => setRate())">
+        <option value="0">
+            Oceń
+        </option>
+        <option value="@(1)">1: Zupełnie się nie zgadzam</option>
+        <option value="@(2)">2: Nie zgadzam się z wiekszością</option>
+        <option value="@(3)">3: Zgadzam się, aczkolwiek mam zastrzeżenia</option>
+        <option value="@(4)">4: Zupełnie się zgadzam</option>
+    </select>
+</div>
+
+
+
+@code
+{
+    [Parameter] public int SelectedRating { get; set; }
+    [Parameter] public EventCallback<int> Rate { get; set; }
+
+    private async Task setRate()
+    {
+        await Rate.InvokeAsync(SelectedRating);
+    }
+
+}

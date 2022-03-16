@@ -1,0 +1,66 @@
+﻿@inject ITopicRatingsRepository topicRatingRepo
+<TopicViewOverall TopicBasicInfoDTO="TopicBasicInfoDTO" @key="TopicBasicInfoDTO.Topic.Id" />
+
+<AuthorizeView>
+    <Authorized>
+        <article class="box">
+            <article class="media">
+                <div class="media-content">
+                    <div class="content">
+                        <strong>Temat: @TopicBasicInfoDTO.Topic.Title</strong>
+                        <br>
+                        @TopicBasicInfoDTO.Topic.TopicContent
+                    </div>
+                    <nav class="level is-mobile">
+                        @if (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Sugestia && TopicBasicInfoDTO.Topic.UserName!= context.User.Identity.Name)
+                        {
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <UniversalRating Rate="RateTopic" SelectedRating="topicRating.Rating" @key="topicRating.Id" />
+                                </div>
+                            </div>
+                        }
+                        <small>@TopicBasicInfoDTO.Topic.UserName · @TopicBasicInfoDTO.Topic.CreationDate</small>
+                    </nav>
+                </div>
+            </article>
+        </article>
+    </Authorized>
+</AuthorizeView>
+@code
+{
+    [Parameter]
+    public TopicBasicInfoDTO TopicBasicInfoDTO { get; set; }
+    private TopicRating topicRating = new TopicRating();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetRating();
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task GetRating()
+    {
+        topicRating = await topicRatingRepo.GetUserRating(TopicBasicInfoDTO.Topic.Id);
+    }
+
+    private async Task RateTopic(int selectedRating)
+    {
+        topicRating.TopicId = TopicBasicInfoDTO.Topic.Id;
+        if (selectedRating >= 0 && selectedRating <= 4)
+        {
+            topicRating.Rating = selectedRating;
+            await topicRatingRepo.AddRating(topicRating);
+        }
+    }
+}
+
+
+
+
+

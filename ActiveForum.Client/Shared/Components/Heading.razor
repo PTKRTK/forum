@@ -1,0 +1,19 @@
+﻿
+<section class="hero is-black">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">@(this.Title)</h1>
+            <h2 class="subtitle">@(this.Subtitle)</h2>
+        </div>
+    </div>
+</section>
+
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; } = "<< Title >>";
+
+    [Parameter]
+    public string Subtitle { get; set; } = "<< Subtitle >>";
+}

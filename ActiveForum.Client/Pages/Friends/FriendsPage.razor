@@ -1,0 +1,66 @@
+﻿@page "/friends"
+@attribute [Authorize]
+@inject IFriendsRepository friendsRepository
+
+
+<Heading Title="Zarządzanie znajomymi"
+         Subtitle="W tym miejscu możesz zarządzać listą swoich znajomych" />
+
+<div class="columns">
+    <div class="column is-half">
+        <ActionMessageView ActionMessage="actionMessage" />
+        <FriendshipInvitations Refresh="Refresh" ReceiveActionMessage="GetActionMessage" />
+    </div>
+
+    <div class="column is-half">
+        <article class="panel is-link p-2">
+            <p class="panel-heading has-background-link-dark">
+                Lista znajomych
+            </p>
+            <div class="has-background-white">
+                @if (friends != null && friends.Count() > 0)
+                {
+                    @foreach (var item in friends)
+                    {
+                        <Friendship Friend = "item" DeleteFromList = "Delete"/>
+                    }
+                }
+                else
+                {
+                    <strong>Nie dodałeś jeszcze żadnego znajomego</strong>
+                }
+            </div>
+        </article>
+    </div>
+</div>
+
+
+@code {
+    private ActionMessage actionMessage = new()
+        {
+            CommunicateContent = "",
+            Successful = false
+        };
+
+    List<FriendInfo> friends = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        friends = await friendsRepository.GetFriends();
+    }
+
+    private void GetActionMessage(ActionMessage message)
+    {
+        this.actionMessage = message;
+    }
+
+    private async Task Refresh()
+    {
+        friends = await friendsRepository.GetFriends();
+    }
+
+    private void Delete(FriendInfo friend)
+    {
+        friends.Remove(friend);
+    }
+}

@@ -1,0 +1,40 @@
+﻿
+<EditForm Model="Topic" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+   
+    <div class="field">
+        <label class="label" for="name">Tytuł tematu</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@Topic.Title" />
+            <ValidationMessage For="@(() => Topic.Title)" />
+        </div>
+    </div>
+
+     <div class="field">
+        <label class="label" for="name">Treść</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@Topic.TopicContent" />
+            <ValidationMessage For="@(() => Topic.TopicContent)" />
+        </div>
+     </div>
+
+      <div class="field">
+            <div class="select">
+                <select @bind="Topic.Status">
+                    <option value="0">
+                        --Wybierz status--
+                    </option>
+                        <option value="@((int)StatusEnum.Pytanie)">@StatusEnum.Pytanie</option>
+                        <option value="@((int)StatusEnum.Sugestia)">@StatusEnum.Sugestia</option>
+                </select>
+            </div>
+    </div>
+    <button type="submit" class="button is-primary">Dodaj</button>
+</EditForm>
+
+
+@code {
+    [Parameter] public Topic Topic { get; set; }
+ 
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+}

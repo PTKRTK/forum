@@ -1,0 +1,70 @@
+﻿@page "/topic/create/{SportId:int}"
+@inject ITopicsMenagmentRepository topicsRepository
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+
+<form class="box">
+ <div class="field">
+<CategoryChoosing SetSelectedCategories="SetSelectedCategories" AddSelectedCategory="AddSelectedCategory"/>
+</div>
+ <div class="field">
+<TopicForm Topic="topic" OnValidSubmit="Create"/>
+</div>
+</form>
+
+@code 
+{
+    [Parameter] public int SportId { get; set; }
+    Topic topic = new Topic();
+
+        protected override void OnInitialized()
+        {
+            try
+            {
+                topic.Topic_Categories = new();
+            }
+            catch
+            {
+
+            }
+        }  
+
+        private async Task Create()
+        {
+            try
+            {
+                topic.SportId = SportId;
+                topic.Id = await topicsRepository.CreateTopic(topic);
+                navigationManager.NavigateTo($"/forum/topics/topic/{topic.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            await Task.CompletedTask;
+        }
+
+        private void SetSelectedCategories(List<CategoryOfTopic> categories)
+        {
+            topic.Topic_Categories.Clear();
+
+            foreach(var c in categories)
+            {
+                topic.Topic_Categories.Add(new Topic_Category()
+                {
+                    TopicCategoryId = c.Id,
+                    TopicId = topic.Id
+                });
+            }
+        }
+
+        private void AddSelectedCategory(CategoryOfTopic category)
+        {
+            topic.Topic_Categories.Add(new Topic_Category()
+            {
+                TopicCategoryId = category.Id,
+                TopicId = topic.Id
+            });
+        }    
+}

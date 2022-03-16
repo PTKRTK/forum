@@ -1,0 +1,43 @@
+﻿@page "/users/edit/{userId}"
+@inject IUsersRepository usersRepository
+
+
+<div class="form-inline">
+    <select class="form-control mb-2 mr-sm-2" @bind="selectedRole">
+        <option value="0">--Wybierz rolę--</option>
+        @foreach (var role in roles)
+        {
+            <option value="@role.RoleName">@role.RoleName</option>
+        }
+    </select>
+
+    <button class="btn btn-info mb-2 mr-sm-2" @onclick="AssignRole">Przydziel rolę</button>
+    <button class="btn btn-danger mb-2 mr-sm-2" @onclick="RemoveRole">Usuń rolę</button>
+</div>
+
+@code {
+    [Parameter] public string UserId { get; set; }
+    private List<RoleDTO> roles = new List<RoleDTO>();
+    private string selectedRole = "0";
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await usersRepository.GetRoles();
+    }
+
+    private async Task AssignRole()
+    {
+        await usersRepository.AssignRole(new EditRoleDTO() { RoleName = selectedRole, UserId = UserId });
+    }
+
+    private async Task RemoveRole()
+    {
+        if (selectedRole == "0")
+        {
+            return;
+        }
+
+        await usersRepository.RemoveRole(new EditRoleDTO() { RoleName = selectedRole, UserId = UserId });
+    }
+
+}

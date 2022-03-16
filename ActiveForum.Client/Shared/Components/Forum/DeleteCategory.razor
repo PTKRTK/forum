@@ -1,0 +1,27 @@
+﻿@inject ICategoriesRepository categoriesRepository
+
+<div class="is-inline p-3">
+<block class="has-background-white">
+    <strong>@CategoryOfTopic.Name</strong>
+
+   <button class="button is-danger"  @onclick="@(() =>  dialog.Show())">
+        Usuń kategorię
+    </button>
+</block>    
+</div>
+
+<DialogComponent @ref = "dialog" Communicate="Czy na pewno chcesz usunąc tą kategorię?" MakeChange = "Delete"> </DialogComponent>
+
+@code {
+   [Parameter] public CategoryOfTopic CategoryOfTopic { get; set; }
+    [Parameter] public EventCallback<CategoryOfTopic> DeleteCategoryEvent { get; set; }
+
+    private DialogComponent dialog;
+
+    public async Task Delete()
+    {
+        await categoriesRepository.DeleteCategory(CategoryOfTopic.Id);
+
+        await DeleteCategoryEvent.InvokeAsync(CategoryOfTopic);
+    }
+}

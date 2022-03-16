@@ -1,0 +1,62 @@
+﻿<div class="navbar-menu has-background-grey-dark">
+    <div class="navbar-start">
+
+        <div class="navbar-item">
+            <p class="control has-icons-left">
+                <input class="input" type="text" placeholder="Wyszukiwarka" id="name" @bind-value="name" @bind-value:event="oninput" @onkeypress="@((KeyboardEventArgs e) => NameKeypress(e))">
+                <span class="icon is-left">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
+            </p>
+        </div>
+        <div class="navbar-item">
+            <button class="button is-primary is-outlined is-fullwidth" @onclick="@(() => Search())">
+                Szukaj
+            </button>
+        </div>
+        <div class="navbar-item" @onclick="@(() => Clear())">
+            <button class="button is-danger is-outlined is-fullwidth">
+                Wyczyść
+            </button>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    public string name = "";
+    [Parameter] public EventCallback<string> FindByName { get; set; }
+
+    private async Task Search()
+    {
+        if (name.Length > 2 && !String.IsNullOrWhiteSpace(name))
+        {
+            name = FirstCharUpper(name);
+            await FindByName.InvokeAsync(name);
+        }
+    }
+
+    private async Task Clear()
+    {
+        name = "";
+        await FindByName.InvokeAsync(name);
+    }
+
+    private async Task NameKeypress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Search();
+        }
+    }
+
+    private string FirstCharUpper(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            return string.Empty;
+        }
+        return char.ToUpper(s[0]) + s.Substring(1);
+    }
+}
+

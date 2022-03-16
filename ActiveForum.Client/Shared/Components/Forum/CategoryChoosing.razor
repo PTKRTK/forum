@@ -1,0 +1,80 @@
+﻿@inject ITopicsCategoriesRepository topicsCategories
+
+<div class="select">
+    <select>
+        <option>
+            --Wybierz kategorie--
+        </option>
+        @foreach (var c in unselectedCategories)
+        {
+            <option @onclick="@(() => AddToSelected(@c))">@c.Name</option>
+        }
+    </select>
+</div>
+
+<div>
+    <strong class="pl-5">Wybrane kategorie: </strong>
+
+    <div class="tags">
+
+        @foreach (var c in selectedCategories)
+        {
+            <div class="tag">
+                @c.Name
+                <button class="delete" @onclick="@(() => RemoveFromSelected(@c))"></button>
+            </div>
+        }
+    </div>
+</div>
+
+
+
+@code {
+    private List<CategoryOfTopic> unselectedCategories = new List<CategoryOfTopic>();
+    private List<CategoryOfTopic> selectedCategories = new List<CategoryOfTopic>();
+
+    [Parameter] public EventCallback<CategoryOfTopic> AddSelectedCategory { get; set; }
+    [Parameter] public EventCallback<List<CategoryOfTopic>> SetSelectedCategories { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetCategories();
+        }
+        catch
+        {
+
+        }
+    }
+
+    private async Task GetCategories()
+    {
+        unselectedCategories = await topicsCategories.GetAllCategories();
+    }
+
+    private async Task AddToSelected(CategoryOfTopic category)
+    {
+        if (category != null)
+        {
+            selectedCategories.Add(category);
+
+            unselectedCategories.Remove(category);
+        }
+
+        await AddSelectedCategory.InvokeAsync(category);
+    }
+
+    private async Task RemoveFromSelected(CategoryOfTopic category)
+    {
+        if (category != null)
+        {
+            unselectedCategories.Add(category);
+
+            selectedCategories.Remove(category);
+        }
+
+        await SetSelectedCategories.InvokeAsync(selectedCategories);
+    }
+}
+

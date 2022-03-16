@@ -1,0 +1,18 @@
+﻿<div class="navbar-menu has-background-grey-dark">
+    <div class="navbar-start">
+        <div class="navbar-item">
+            @foreach (var i in Items)
+            {
+                <div class="pl-3">
+                <a class="button" href="@i.PageUlr">@i.PageName</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public List<MenagmentPanelItem> Items { get; set; }
+}

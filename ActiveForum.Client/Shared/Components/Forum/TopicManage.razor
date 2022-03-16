@@ -1,0 +1,58 @@
+﻿@inject NavigationManager navigaiontManager
+@inject ITopicsMenagmentRepository topicMenagmentReppo
+
+<div class="navbar-menu has-background-grey-dark">
+    <div class="navbar-start">
+        @if (TopicBasicInfoDTO.Topic.Status != (int)StatusEnum.Zweryfikowany)
+        {
+            <AuthorizeView Roles="Owner, Admin, Moderator">
+                <div class="navbar-item">
+                    <button class="button is-outlined is-success" @onclick="@(() => dialogVerify.Show())">Zweryfikuj</button>
+                </div>
+            </AuthorizeView>
+
+            <AuthorizeView>
+                <div class="navbar-item">
+                    @if (context.User.Identity.Name == TopicBasicInfoDTO.Topic.UserName || context.User.IsInRole("Owner")
+                      || context.User.IsInRole("Admin")  || context.User.IsInRole("Moderator"))
+                    {
+                        <button class="button is-danger is-outlined" @onclick="@(() => dialogDelete.Show())">Usuń temat</button>
+                    }
+                </div>
+            </AuthorizeView>
+        }
+        else
+        {
+              <AuthorizeView Roles="Owner, Admin, Moderator">
+                <div class="navbar-item">
+                     <button class="button is-danger is-outlined" @onclick="@(() => dialogDelete.Show())">Usuń temat</button>
+                </div>
+             </AuthorizeView>
+        }
+    </div>
+</div>
+
+<DialogComponent @ref = "dialogVerify" Communicate="Czy na pewno chcesz zweryfikować temat?" MakeChange = "SetVerified"> </DialogComponent>
+
+<DialogComponent @ref = "dialogDelete" Communicate="Czy na pewno chcesz usunąć temat?" MakeChange = "DeleteTopic"> </DialogComponent>
+
+@code {
+    private DialogComponent dialogVerify;
+    private DialogComponent dialogDelete;
+
+    [Parameter]
+    public EventCallback Verify { get; set; }
+
+    [Parameter] public TopicBasicInfoDTO TopicBasicInfoDTO { get; set; }
+
+    private async Task DeleteTopic()
+    {
+        await topicMenagmentReppo.DeleteTopic(TopicBasicInfoDTO.Topic.Id);
+        navigaiontManager.NavigateTo($"/forum/topics/{TopicBasicInfoDTO.Topic.SportId}");
+    }
+
+    public async Task SetVerified()
+    {
+        await Verify.InvokeAsync();
+    }
+}

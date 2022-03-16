@@ -1,0 +1,125 @@
+﻿@page "/forum/topics/topic/{TopicId:int}"
+@inject ITopicsBasicInfoRepository topicBasicInfoRepo
+@inject IPostsRepository postRepository
+@inject IVerificationRepository verificationRepository
+@attribute [Authorize]
+
+<TopicManage TopicBasicInfoDTO = "topicBasicInfoDTO" Verify = "SetVerified"/>
+
+<TopicView TopicBasicInfoDTO="topicBasicInfoDTO" @key="topicBasicInfoDTO.Topic.Id" />
+
+<UniversalList List="posts">
+    <ItemFragment Context="post">
+        <PostView Post="post" @key="post.Id" AddToVerified="AddToVerifiedPosts" RemoveFromVerified="RemoveFromVerifiedPost" Verified="verified" Refresh="Refresh" />
+    </ItemFragment>
+</UniversalList>
+
+@if (topicBasicInfoDTO.Topic.Status != (int)StatusEnum.Zweryfikowany)
+{
+<AddingCommentForm TopicId = "TopicId" ShowAddedPost = "ShowAddedPost"/>
+}
+
+<Pagination CurrentPage="paginationDTO.CurrentPage" PagesAmount="pagesAmount"
+            SelectedPage="SelectedPage" />
+
+@code {
+    [Parameter] public int TopicId { get; set; }
+
+    bool verified;
+
+    private List<Post> posts = new List<Post>();
+
+    private List<int> verifiedPosts = new List<int>();
+
+    public List<MenagmentPanelItem> items = new ();
+
+    private PaginationDTO paginationDTO = new PaginationDTO() { PageObjectsNumber = 4 };
+
+    private int pagesAmount = 1;
+
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    private TopicBasicInfoDTO topicBasicInfoDTO = new TopicBasicInfoDTO()
+        {
+            Topic = new(),
+            PostsNumber = 0,
+            Categories = new()
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetTopic();
+
+            if (topicBasicInfoDTO.Topic.Status == (int)StatusEnum.Zweryfikowany)
+            {
+                verified = true;
+            }
+            else
+            {
+                verified = false;
+            }
+
+            await GetPaginatedPosts();
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task GetTopic()
+    {
+        topicBasicInfoDTO = await topicBasicInfoRepo.GetTopic(TopicId);
+    }
+
+    private async Task GetPaginatedPosts()
+    {
+        PaginatedResponse<List<Post>> paginatedSports;
+
+        paginatedSports = await postRepository.GetTopicPosts(paginationDTO, TopicId);
+
+        posts = paginatedSports.Response;
+        pagesAmount = paginatedSports.PagesAmount;
+    }
+
+    private async Task SelectedPage(int currentPage)
+    {
+        paginationDTO.CurrentPage = currentPage;
+        await GetPaginatedPosts();
+    }
+
+    private void RemoveFromVerifiedPost(int postId)
+    {
+        verifiedPosts.Remove(postId);
+    }
+
+    private void AddToVerifiedPosts(int postId)
+    {
+        verifiedPosts.Add(postId);
+    }
+
+    private async Task SetVerified()
+    {
+        VerifiedDTO verifiedDTO = new() { TopicID = this.TopicId, PostIds = new List<int>() };
+
+        foreach (var v in verifiedPosts)
+        {
+            verifiedDTO.PostIds.Add(v);
+        }
+        await verificationRepository.Verify(verifiedDTO);
+        await GetTopic();
+        await GetPaginatedPosts();
+        verified = true;
+    }
+
+    private void ShowAddedPost(Post post)
+    {
+        posts.Add(post);
+    }
+
+    private async Task Refresh()
+    {
+        await GetPaginatedPosts();
+    }
+}

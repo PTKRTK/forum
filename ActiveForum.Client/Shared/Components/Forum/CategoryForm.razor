@@ -1,0 +1,29 @@
+﻿<form class="box">
+<EditForm Model="CategoryOfTopic" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="field">
+        <label class="label" for="name">Nazwa sportu</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@CategoryOfTopic.Name" />
+            <ValidationMessage For="@(() => CategoryOfTopic.Name)" />
+        </div>
+    </div>
+
+     <div class="field">
+        <label class="label" for="name">Opis</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@CategoryOfTopic.Description" />
+            <ValidationMessage For="@(() => CategoryOfTopic.Description)" />
+        </div>
+    </div>
+    
+    <button type="submit" class="button is-primary">Dodaj kategorię</button>
+</EditForm>
+</form>
+
+@code {
+    [Parameter] public CategoryOfTopic CategoryOfTopic { get; set; }
+ 
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+}

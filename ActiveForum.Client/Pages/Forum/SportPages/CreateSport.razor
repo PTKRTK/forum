@@ -1,0 +1,23 @@
+﻿@page "/sport/create"
+@inject ISportsMenagmentRepository sportsRepository
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "Owner, Admin")]
+
+<SportForm Sport="sport" OnValidSubmit="Create" />
+
+@code {
+    Sport sport = new Sport();
+
+    private async Task Create()
+    {
+        try
+        {
+            await sportsRepository.CreateSport(sport);
+            navigationManager.NavigateTo("/forum");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

@@ -1,0 +1,30 @@
+﻿@page "/categories/manage"
+@inject ICategoriesRepository categoriesRepository
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "Owner, Admin")]
+
+@foreach(var c in categories)
+{
+    <DeleteCategory CategoryOfTopic="c" DeleteCategoryEvent = "GetCategories" @key="c.Id"/>
+}
+
+@code {
+    private List<CategoryOfTopic> categories = new ();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetCategories();
+        }
+        catch
+        {
+
+        }
+    }
+
+    private async Task GetCategories()
+    {
+        categories = await categoriesRepository.GetCategories();
+    }
+}

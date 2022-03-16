@@ -1,0 +1,36 @@
+﻿<form class="box">
+<EditForm Model="Sport" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="field">
+        <label class="label" for="name">Nazwa sportu</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@Sport.Name" />
+            <ValidationMessage For="@(() => Sport.Name)" />
+        </div>
+    </div>
+
+     <div class="field">
+        <label class="label" for="name">Opis</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@Sport.Description" />
+            <ValidationMessage For="@(() => Sport.Description)" />
+        </div>
+    </div>
+    
+    <div class="field">
+        <label class="label" for="name">Adres url zdjęcia</label>
+        <div class="control">
+            <InputText class="input" @bind-Value="@Sport.ImageUrl" />
+            <ValidationMessage For="@(() => Sport.ImageUrl)" />
+        </div>
+    </div>
+    <button type="submit" class="button is-primary">Dodaj</button>
+</EditForm>
+</form>
+
+@code {
+    [Parameter] public Sport Sport { get; set; }
+ 
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+}

@@ -1,0 +1,106 @@
+﻿@inject IFriendsRepository friendsRepository
+
+<div class="tile is-ancestor p-2">
+    <div class="tile is-parent is-8">
+        <article class="tile is-child box">
+            <label class="label">Wyślij zaproszenie do znajomych</label>
+            <div class="control">
+                <input class="input is-expanded" type="text" placeholder="Wpisz email użytkownika" id="name" @bind-value="invitedPerson"
+                       @bind-value:event="oninput" @onkeypress="@((KeyboardEventArgs e) => NameKeypress(e))">
+            </div>
+            <br />
+            <button class="button is-success" @onclick="@(() => Invite())">
+                <span class="icon is-small">
+                    <i class="fas fa-plus-square"></i>
+                </span>
+                <span>Zaproś</span>
+            </button>
+        </article>
+    </div>
+</div>
+
+
+<article class="panel is-link p-2">
+    <p class="panel-heading">
+        Lista zaproszeń
+    </p>
+    <div class = "has-background-white">
+    @if (askingPeople != null && askingPeople.Count() > 0)
+    {
+        @foreach (var a in askingPeople)
+        {
+            <div class="field  is-active has-background-white p-2">
+                <text>@a.Email</text>
+                <button class="button is-success" @onclick="@(() => Accept(a))">
+                    <span class="icon is-small">
+                        <i class="fas fa-check"></i>
+                    </span>
+                    <span>Zakceptuj</span>
+                </button>
+                <button class="button is-danger is-outlined" @onclick="@(() => Delete(a))">
+                    <span>Usuń</span>
+                    <span class="icon is-small">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </button>
+            </div>
+        }
+    }
+    else
+    {
+        <strong>Nie masz w tej chwili żadnych zaproszeń</strong>
+    }
+
+    <br />
+    </div>
+</article>
+
+
+
+
+@code {
+    [Parameter] public EventCallback<ActionMessage> ReceiveActionMessage { get; set; }
+    [Parameter] public EventCallback Refresh { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    private string invitedPerson = string.Empty;
+    private ActionMessage actionMessageView;
+
+    List<FriendInfo> askingPeople = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        askingPeople = await friendsRepository.GetRequests();
+    }
+
+    private async Task Invite()
+
+    {
+        actionMessageView = await friendsRepository.Invite(invitedPerson);
+        await ReceiveActionMessage.InvokeAsync(actionMessageView);
+        await Refresh.InvokeAsync();
+    }
+
+    private async Task Accept(FriendInfo friendInfo)
+    {
+        await friendsRepository.AccepptInvite(friendInfo);
+        askingPeople = await friendsRepository.GetRequests();
+        await Refresh.InvokeAsync();
+    }
+
+    private async Task Delete(FriendInfo friendInfo)
+    {
+        await friendsRepository.DeleteFriend(friendInfo);
+        askingPeople = await friendsRepository.GetRequests();
+        await Refresh.InvokeAsync();
+    }
+
+
+    private async Task NameKeypress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Invite();
+        }
+    }
+}

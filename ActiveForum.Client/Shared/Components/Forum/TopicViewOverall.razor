@@ -1,0 +1,56 @@
+﻿@inject ITopicRatingsRepository topicRatingRepo
+
+<nav class="level is-mobile">
+    <div class="level-item has-text-centered">
+        <div>
+                <p class="heading">Status</p>
+                <p class="title">
+     
+                          @if  (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Pytanie)
+                        {
+                            <text>@StatusEnum.Pytanie</text>
+                        }
+                        @if  (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Sugestia)
+                        {
+                            <text>@StatusEnum.Sugestia</text>
+                        }
+                        @if  (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Zweryfikowany)
+                        {
+                            <text>@StatusEnum.Zweryfikowany</text>
+                        }
+                </p>
+        </div>
+    </div>
+    <div class="level-item has-text-centered">
+        <div>
+                <p class="heading">Liczba odpowiedzi:</p>
+                <p class="title">@TopicBasicInfoDTO.PostsNumber</p>
+        </div>
+    </div>
+    <div class="level-item has-text-centered">
+        <div>
+                <p class="heading">Kategorie</p>
+                @foreach(var c in TopicBasicInfoDTO.Categories)
+            {
+               <strong><text>@c.Name, </text></strong>
+            }
+        </div>
+    </div>
+    @if (TopicBasicInfoDTO.Topic.Status != (int)StatusEnum.Pytanie && @TopicBasicInfoDTO.AvgRating>=1 && @TopicBasicInfoDTO.AvgRating<=4)
+    { 
+
+    <div class="level-item has-text-centered">
+        <div>
+                <p class="heading">Średnia ocena</p>
+                <p class="title">@TopicBasicInfoDTO.AvgRating</p>
+        </div>
+    </div>
+    }
+</nav>
+   
+   
+@code {
+      [Parameter]
+       public TopicBasicInfoDTO TopicBasicInfoDTO  { get; set; }
+}
+

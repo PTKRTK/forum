@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# SA1121: Use built-in type alias
+dotnet_diagnostic.SA1121.severity = none

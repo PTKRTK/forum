@@ -1,0 +1,57 @@
+﻿<nav class="pagination is-rounded is-centered is-small p-2" role="navigation" aria-label="pagination">
+    <a @onclick="@(() => SetPage(PreviousPage()))" style="color: #FFF; background-color: #92acc3;" class="pagination-previous">Poprzednia strona</a>
+    <a @onclick="@(() => SetPage(NextPage()))" style="color: #FFF; background-color: #92acc3;" class="pagination-next"> Następna strona</a>
+    <ul class="pagination-list">
+        @if (CurrentPage > 2)
+        {
+            <li @onclick="@(() => SetPage(1))"><a class="pagination-link" style="color: #FFF; background-color: #92acc3;" aria-label="Goto first page">1</a></li>
+            <li><span class="pagination-ellipsis">&hellip;</span></li>
+        }
+
+        @if (CurrentPage > 1)
+        {
+            <li @onclick="@(() => SetPage(PreviousPage()))"><a style="color: #FFF; background-color: #92acc3;" class="pagination-link" aria-label="Goto previous">@(CurrentPage-1)</a></li>
+        }
+
+        <li><a class="pagination-link is-current has-background-primary" aria-label="curent page " aria-current="page">@CurrentPage</a></li>
+
+        @if (PagesAmount > CurrentPage)
+        {
+            <li @onclick="@(() =>  SetPage(NextPage()))"><a style="color: #FFF; background-color: #92acc3;" class="pagination-link" aria-label="Goto next page">@(CurrentPage+1)</a></li>
+        }
+        @if (PagesAmount > CurrentPage + 1)
+        {
+            <li><span class="pagination-ellipsis">&hellip;</span></li>
+            <li @onclick="@(() => SetPage(PagesAmount))"><a style="color: #FFF;  background-color: #92acc3;" class="pagination-link" aria-label="Goto last page">@PagesAmount</a></li>
+        }
+    </ul>
+</nav>
+
+@code {
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PagesAmount { get; set; }
+    [Parameter] public EventCallback<int> SelectedPage { get; set; }
+
+    private async Task SetPage(int choosedPage)
+    {
+        await SelectedPage.InvokeAsync(choosedPage);
+    }
+
+    private int PreviousPage()
+    {
+        if (CurrentPage - 1 >= 1)
+        {
+            CurrentPage -= 1;
+        }
+        return CurrentPage;
+    }
+
+    private int NextPage()
+    {
+        if (CurrentPage + 1 <= PagesAmount)
+        {
+            CurrentPage += 1;
+        }
+        return CurrentPage;
+    }
+}

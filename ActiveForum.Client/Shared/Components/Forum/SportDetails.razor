@@ -1,0 +1,61 @@
+﻿@inject ISportsMenagmentRepository sportRepository
+
+<section class="hero ">
+    <div class="hero-body">
+        <div class="container">
+            <div class="tile is-ancestor">
+                <div class="tile is-parent">
+                    <article class="tile is-child box">
+                        <figure class="image is-4by3">
+                            <a href="@sportURL">
+                                <img src="@Sport.ImageUrl" />
+                            </a>
+                        </figure>
+                    </article>
+                </div>
+                <div class="tile is-parent is-8">
+                    <article class="tile is-child box">
+                        <a href="@sportURL">
+                            <p class="title">@Sport.Name</p>
+                        </a>
+                        <div class="content">
+                            @Sport.Description
+                            <AuthorizeView Roles = "Owner, Admin">
+                                <br/>
+                                <br/>
+                                  <button class="button is-danger"  @onclick="@(() =>  dialog.Show())">
+                                     Usuń sport
+                                  </button>
+                            </AuthorizeView>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<DialogComponent @ref = "dialog" Communicate="@communicate" MakeChange = "Delete"> </DialogComponent>
+
+
+@code {
+    [Parameter] public Sport Sport { get; set; }
+    private string sportURL = string.Empty;
+    [Parameter] public EventCallback<Sport> DeleteSport { get; set; }
+
+    private DialogComponent dialog;
+    string communicate = $"Czy na pewno chcesz usunąć wybrany sport?";
+
+    protected override void OnInitialized()
+    {
+        sportURL = $"forum/topics/{Sport.Id}";
+    }
+
+    public async Task Delete()
+    {
+        await sportRepository.DeleteSport(Sport.Id);
+
+        await DeleteSport.InvokeAsync(Sport);
+    }
+}
+

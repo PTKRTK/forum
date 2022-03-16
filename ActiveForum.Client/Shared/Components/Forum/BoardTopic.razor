@@ -1,0 +1,64 @@
+﻿<div class="tile is-ancestor p-2">
+    <div class="tile is-parent is-8">
+        <article class="tile is-child box">
+            <a href="@sportURL">
+                <p class="title">@TopicBasicInfoDTO.Topic.Title</p>
+            </a>
+
+            <div class="tags are-medium pt-3">
+                <span class="tag">
+                    Liczba postów: @TopicBasicInfoDTO.PostsNumber
+                </span>
+                <span class="tag">
+                    Status:
+                    @if (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Pytanie)
+                    {
+                        <text>@StatusEnum.Pytanie</text>
+                    }
+                    @if (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Sugestia)
+                    {
+                        <text>@StatusEnum.Sugestia</text>
+                    }
+                    @if (TopicBasicInfoDTO.Topic.Status == (int)StatusEnum.Zweryfikowany)
+                    {
+                        <text>@StatusEnum.Zweryfikowany</text>
+                    }
+                </span>
+                <span class="tag">
+                    Nazwa użytkownika: @TopicBasicInfoDTO.Topic.UserName
+                </span>
+                <span class="tag">
+                    Kategorie:
+                    @foreach (var c in TopicBasicInfoDTO.Categories)
+                    {
+                        <text>@c.Name, </text>
+                    }
+                </span>
+            </div>
+        </article>
+    </div>
+</div>
+
+
+
+         
+
+
+@code {
+    [Parameter] public TopicBasicInfoDTO TopicBasicInfoDTO { get; set; }
+
+    private string sportURL = string.Empty;
+
+    protected override void OnInitialized()
+    {       
+        try
+        {
+            sportURL = $"/forum/topics/topic/{TopicBasicInfoDTO.Topic.Id}";  
+        }
+        catch
+        {
+
+        }
+    }   
+}
+

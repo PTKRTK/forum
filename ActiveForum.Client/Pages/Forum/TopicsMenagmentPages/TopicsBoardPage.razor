@@ -1,0 +1,84 @@
+﻿@page "/forum/topics/{SportId:int}"
+@inject ITopicsBasicInfoRepository topicsRepository
+@attribute [Authorize]
+
+<Heading Title="Tematy"
+         Subtitle="Znajdź interesujący Cię temat (nie zapomnij o możliwości skorzystania z filtru)" />
+
+<div class="navbar-menu has-background-grey-dark">
+    <div class="navbar-start">
+        <div class="navbar-item">
+           <a class="button" href="@createURL">Utwórz temat</a>
+        </div>
+     </div>
+</div>
+
+<TopicFilter SetTopicsFilterDTO="SetTopicsFilterDTO" />
+
+<UniversalList List="topicBasicInfoDTO">
+    <ItemFragment Context="topicBasicInfoDTO">
+        <BoardTopic TopicBasicInfoDTO = "topicBasicInfoDTO" @key="topicBasicInfoDTO.Topic.Id" />
+    </ItemFragment>
+</UniversalList>
+
+<Pagination CurrentPage="paginationDTO.CurrentPage" PagesAmount="pagesAmount"
+            SelectedPage="SelectedPage" />
+
+
+
+@code {
+    [Parameter] public int SportId { get; set; }
+    string createURL = string.Empty;
+    private List<TopicBasicInfoDTO> topicBasicInfoDTO;
+    private TopicsFilterDTO topicsFilterDTO = new TopicsFilterDTO()
+        {
+            Title = "",
+            Status = 0,
+            Categories = new List<int>()
+    };
+    private PaginationDTO paginationDTO = new PaginationDTO() { PageObjectsNumber = 5 };
+    private int pagesAmount;   
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            createURL = $"topic/create/{SportId}";
+            await GetPaginatedTopics();
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task GetPaginatedTopics()
+    {
+        PaginatedResponse<List<TopicBasicInfoDTO>> paginatedTopics;
+        if ((topicsFilterDTO.Title.Length > 2 && !string.IsNullOrWhiteSpace(topicsFilterDTO.Title)) || topicsFilterDTO.Status!=(int)StatusEnum.NaN || topicsFilterDTO.Categories.Count() > 0)
+        {
+            paginatedTopics = await topicsRepository.GetTopics(paginationDTO, SportId, topicsFilterDTO);
+        }
+        else
+        {
+            paginatedTopics = await topicsRepository.GetTopics(paginationDTO, SportId);
+        }
+
+        topicBasicInfoDTO = paginatedTopics.Response;
+        pagesAmount = paginatedTopics.PagesAmount;
+        createURL = $"topic/create/{SportId}";
+    }
+
+    private async Task SelectedPage(int currentPage)
+    {
+        paginationDTO.CurrentPage = currentPage;
+        await GetPaginatedTopics();
+    }
+
+    private async Task SetTopicsFilterDTO(TopicsFilterDTO topicsFilterDTO)
+    {
+        this.topicsFilterDTO.Title = topicsFilterDTO.Title;
+        this.topicsFilterDTO.Categories = topicsFilterDTO.Categories;
+        this.topicsFilterDTO.Status = topicsFilterDTO.Status;
+        await GetPaginatedTopics();
+    }
+}

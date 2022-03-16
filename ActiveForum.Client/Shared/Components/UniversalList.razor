@@ -1,0 +1,25 @@
+﻿@typeparam TItem
+
+@if (List == null)
+{
+    <text>Błąd pobierania danych.</text>
+}
+else if (List.Count == 0)
+{
+    <text>Baza jest pusta. Utwórz pierwszy element.</text>
+}
+else
+{
+    @if (ItemFragment != null)
+    {
+        @foreach (var element in List)
+        {
+            @ItemFragment(element)
+        }
+    }
+}
+
+@code {
+    [Parameter] public RenderFragment<TItem> ItemFragment { get; set; }
+    [Parameter] public List<TItem> List { get; set; }
+        }

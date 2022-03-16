@@ -1,0 +1,183 @@
+﻿@page "/communicator/"
+
+@using ActiveForum.Client.Auth
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Authorization
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILoginService loginService
+@inject IFriendsRepository friendsRepository
+@inject IMessagesRepository messagesRepository
+@attribute [Authorize]
+
+ <Heading Title="Komunikator" 
+        Subtitle="Wybierz znajomego i rozpocznij z nim konwersację" />
+<div class="field is-horizontal">     
+    <div class="field-label is-normal">
+            <strong class="pr-6">Lista znajomych</strong>
+            <br>
+        <div class="select is-multiple">
+                    
+            <select multiple size="8">
+                @foreach (var f in friends)
+                {
+                    <option @onclick="@(() => Select(@f.Email))" value="@f.Email">@f.Email</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="field-body">
+        <div class="field pr-6 pt-2">
+            @if (!IsConnected)
+            {
+                <text>Nie wybrałeś żadnego znajomego</text>
+            }
+            else
+            {
+                <div style="overflow-y:scroll; height:500px;" class="has-background-white-bis">
+                    @foreach (var m in messages)
+                    {
+                        <article class="media">
+                            <div class="media-content">
+                                <div class="content">
+                                    <p>
+
+                                        <strong>@m.SenderEmail</strong>
+                                        <br>
+                                        @m.Message
+                                        <br>
+                                        <small>@m.Date</small>
+
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <article class="media">
+                    <div class="media-content">
+                        <div class="field">
+                            <p class="control">
+                                <textarea class="textarea" @bind="messageModel.Message" @bind:event="oninput" @onkeyup="HandleInput" placeholder="Wpisz treść wiadomości"></textarea>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <p class="control">
+                                <button class="button" @onclick="Send">Wyślij</button>
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    public string recipientEmail = "";
+    private HubConnection hubConnection;
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    private string userEmail = "";
+
+    MessageModel messageModel = new MessageModel()
+        {
+            Message = string.Empty,
+
+            RecipientEmail = string.Empty,
+
+            SenderEmail = string.Empty
+        };
+
+
+    private List<MessageModel> messages = new();
+
+    List<FriendInfo> friends = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        friends = await friendsRepository.GetFriends();
+    }
+
+    public async Task Connect()
+    {
+        messageModel.RecipientEmail = recipientEmail;
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"), options =>
+        {
+            options.AccessTokenProvider = async () =>
+            {
+                var token = await loginService.GetToken();
+                return token;
+            };
+        })
+         .Build();
+        var authState = await AuthenticationState;
+        userEmail = authState.User.Identity.Name;
+        hubConnection.On<MessageModel>("GetMessage", (messageModel) =>
+        {
+            if (messageModel.SenderEmail == userEmail || (messageModel.RecipientEmail == userEmail && messageModel.SenderEmail == recipientEmail))
+            {
+                messages.Add(messageModel);
+                StateHasChanged();
+            }
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        messageModel.RecipientEmail = recipientEmail;
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("SendMessage", messageModel);
+            messageModel.Message = string.Empty;
+        }
+    }
+
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    private async Task HandleInput(KeyboardEventArgs args)
+    {
+        if (args.Key.Equals("Enter"))
+        {
+            await Send();
+        }
+    }
+
+    private async Task Select(string recipentEmail)
+    {
+        messages.Clear();
+        this.recipientEmail = recipentEmail;
+
+        @if (!IsConnected)
+        {
+            await Connect();
+        }
+
+        var messagesDB = await messagesRepository.GetMessages(recipentEmail);
+
+        if (messagesDB != null && messagesDB.Count > 0)
+        {
+            messages = messagesDB;
+        }
+        else
+        {
+            messages.Clear();
+        }
+    }
+}

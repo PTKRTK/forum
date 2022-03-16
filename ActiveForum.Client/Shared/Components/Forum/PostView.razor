@@ -1,0 +1,130 @@
+﻿@inject IPostRatingsRepository postRatingRepo
+@inject IPostsRepository postsRepository
+
+<article class="box">
+    <article class="media">
+        <div class="media-content">
+            <div class="content">
+                @Post.PostContent
+            </div>
+            <p>
+                @if(@avgRating!=0)
+                            {
+                                <label >
+                                    <strong>Średnia ocena to: @avgRating</strong>
+                                </label>
+                            }
+            </p>
+            <nav class="level is-mobile">
+                <AuthorizeView>
+                    <Authorized>
+                        @if (Post.UserName != context.User.Identity.Name && Verified != true)
+                        {
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <UniversalRating Rate="RatePost" SelectedRating="postRating.Rating" @key="Post.Id" />
+                                </div>
+                            </div>
+                        }
+                        <small>@Post.UserName · @Post.CreationDate  </small>
+                               @if (Post.UserName == context.User.Identity.Name && Verified != true)
+                        {
+                            <button class="button is-danger" @onclick="@(() => dialogDelete.Show())">
+                                    Usuń odpowiedź
+                             </button>
+                        }
+                    </Authorized>
+                </AuthorizeView>
+                 
+
+                @if (Verified != true)
+                {
+                    <AuthorizeView Roles="Owner, Admin, Moderator">
+                        <Authorized>
+                            <label class="checkbox">
+                                <input type="checkbox" @bind="isNotChecked" @onclick="@(() => Verify())">
+                                Zaznacz jeśli post ma być widoczny po zweryfikowaniu tematu.
+                            </label>
+                           </Authorized>
+                    </AuthorizeView>
+                }
+            </nav>
+        </div>
+    </article>
+</article>
+
+<DialogComponent @ref = "dialogDelete" Communicate="Czy na pewno chcesz usunąć post?" MakeChange = "DeletePost"> </DialogComponent>
+
+@code
+{
+    [Parameter]
+    public Post Post { get; set; }
+
+    [Parameter]
+    public bool Verified { get; set; }
+
+    [Parameter]
+    public EventCallback<int> AddToVerified { get; set; }
+
+    [Parameter]
+    public EventCallback<int> RemoveFromVerified { get; set; }
+
+    [Parameter]
+    public EventCallback Refresh { get; set; }
+
+    private DialogComponent dialogDelete;
+
+    private double avgRating;
+
+    private bool isNotChecked = false;
+
+    private PostRating postRating = new PostRating();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"{Verified}");
+        try
+        {
+            await GetRating();
+            avgRating = await postRatingRepo.GetAvgRating(Post.Id);
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task GetRating()
+    {
+        postRating = await postRatingRepo.GetUserRating(Post.Id);
+    }
+
+    private async Task RatePost(int selectedRating)
+    {
+        postRating.PostId = Post.Id;
+        if (selectedRating >= 0 && selectedRating <= 4)
+        {
+            postRating.Rating = selectedRating;
+            await postRatingRepo.AddRating(postRating);
+        }
+    }
+
+    private async Task Verify()
+    {
+        Console.WriteLine($"Wartosc: {isNotChecked}");
+        if (isNotChecked != true)
+        {
+            await AddToVerified.InvokeAsync(Post.Id);
+        }
+        else
+        {
+            await RemoveFromVerified.InvokeAsync(Post.Id);
+        }
+    }
+
+    private async Task DeletePost()
+    {
+        await postsRepository.DeletePost(Post.Id);
+        await Refresh.InvokeAsync();
+    }
+}
+
