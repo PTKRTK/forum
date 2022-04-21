@@ -1,9 +1,7 @@
-Praca inøynierska Patryka Rutkowskiego.
+Nale≈ºy ustawiƒá "DefaultConnection" w pliku appsettings.Development.json.
+Je≈õli baza danych nie istnieje,
+zostanie automatycznie utworzona wraz z tabelami i przyk≈Çadowymi rekordami.
 
-Naleøy ustawiÊ "DefaultConnection" w pliku appsettings.Development.json.
-Jeúli baza danych nie istnieje,
-zostanie automatycznie utworzona wraz z tabelami i przyk≥adowymi rekordami.
-
-Zostanie rÛwnieø utworzone konto admina:
+Zostanie r√≥wnie≈º utworzone konto admina:
 login: admin@mail.pl
 haslo: Admin123!
